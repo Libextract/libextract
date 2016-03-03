@@ -9,6 +9,7 @@ from operator import itemgetter
 from heapq import nlargest
 
 from lxml.html import parse, HTMLParser
+from lxml import etree
 from statscounter import StatsCounter
 
 __all__ = ['parse_html', 'pipeline']
@@ -23,7 +24,7 @@ def parse_html(fileobj, encoding):
     The *encoding* is assumed to be utf8.
     """
     parser = HTMLParser(encoding=encoding, remove_blank_text=True)
-    return parse(fileobj, parser)
+    return etree.fromstring(fileobj, parser)
 
 
 def pipeline(data, funcs):
@@ -34,18 +35,18 @@ def pipeline(data, funcs):
     for func in funcs:
         data = func(data)
     return data
-    
+
 
 def select(etree, query=SELECT_PARENTS):
     return etree.xpath(query)
-    
-    
-def measure(nodes): 
-    return [(node, StatsCounter([child.tag for child in node])) 
+
+
+def measure(nodes):
+    return [(node, StatsCounter([child.tag for child in node]))
             for node in nodes]
-            
-        
-def rank(pairs, key=lambda x: x[1].most_common(1)[0][1], 
+
+
+def rank(pairs, key=lambda x: x[1].most_common(1)[0][1],
          count=TOP_FIVE):
     return nlargest(count, pairs, key=key)
 
